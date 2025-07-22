@@ -1,8 +1,9 @@
 {
   "name": "network-manager-app",
-  "productName": "network-manager-app",
+  "private": true,
+  "productName": "Mac网络管理工具",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Mac网络管理工具, 基于electron构建",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -11,7 +12,7 @@
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
   },
-  "keywords": [],
+  "keywords": ["network", "mac", "ethernet"],
   "author": {
     "name": "luojing1336",
     "email": "luojing1336@hotmail.com"

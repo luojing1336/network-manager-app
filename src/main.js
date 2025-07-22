@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
+import { exec } from 'node:child_process';
 import started from 'electron-squirrel-startup';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -49,6 +50,81 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+// 执行shell命令的辅助函数
+function executeCommand(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject({ error: error.message, stderr });
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
+// IPC处理程序
+ipcMain.handle('get-current-network', async () => {
+  try {
+    const primaryInterface = await executeCommand("route get default 2>/dev/null | awk '/interface: / {print $2}'");
+    const serviceName = await executeCommand(`networksetup -listnetworkserviceorder | grep -B1 "Device: ${primaryInterface.trim()}" | head -n1 | sed 's/.*) //'`);
+    
+    return {
+      success: true,
+      interface: primaryInterface.trim(),
+      serviceName: serviceName.trim()
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.error || 'Unknown error'
+    };
+  }
+});
+
+ipcMain.handle('enable-ethernet', async (event, serviceName) => {
+  try {
+    await executeCommand(`networksetup -setnetworkserviceenabled "${serviceName}" on`);
+    // 等待网络状态更新
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.error || 'Failed to enable ethernet'
+    };
+  }
+});
+
+ipcMain.handle('disable-ethernet', async (event, serviceName) => {
+  try {
+    await executeCommand(`networksetup -setnetworkserviceenabled "${serviceName}" off`);
+    // 等待网络状态更新
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.error || 'Failed to disable ethernet'
+    };
+  }
+});
+
+ipcMain.handle('get-network-services', async () => {
+  try {
+    const output = await executeCommand('networksetup -listallnetworkservices');
+    const services = output.split('\n')
+      .filter(line => line.trim() && !line.includes('*') && !line.includes('An asterisk'))
+      .map(line => line.trim());
+    return { success: true, services };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.error || 'Failed to get network services'
+    };
   }
 });
 

@@ -1,13 +1,71 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Hello World!</title>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络管理工具</title>
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌐 网络管理工具</h1>
+            <p>轻松管理你的Mac网络连接</p>
+        </header>
 
-  </head>
-  <body>
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
-    <script type="module" src="/src/renderer.js"></script>
-  </body>
+        <main class="main-content">
+            <!-- 当前网络状态 -->
+            <div class="status-card">
+                <div class="card-header">
+                    <h2>📡 当前网络状态</h2>
+                    <button id="refreshBtn" class="btn btn-secondary">刷新</button>
+                </div>
+                <div id="currentStatus" class="status-info">
+                    <div class="loading">正在获取网络信息...</div>
+                </div>
+            </div>
+
+            <!-- 网络服务选择 -->
+            <div class="control-card">
+                <h2>🔌 以太网控制</h2>
+                <div class="service-selector">
+                    <label for="serviceSelect">选择网络服务:</label>
+                    <select id="serviceSelect" class="select-input">
+                        <option value="">正在加载网络服务...</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button id="enableBtn" class="btn btn-primary" disabled>
+                        <span class="btn-icon">🔌</span>
+                        启用以太网
+                    </button>
+                    <button id="disableBtn" class="btn btn-danger" disabled>
+                        <span class="btn-icon">⏹️</span>
+                        禁用以太网
+                    </button>
+                </div>
+            </div>
+
+            <!-- 操作日志 -->
+            <div class="log-card">
+                <h2>📝 操作日志</h2>
+                <div id="logContainer" class="log-container">
+                    <div class="log-entry info">应用已启动，等待操作...</div>
+                </div>
+                <button id="clearLogBtn" class="btn btn-secondary btn-small">清空日志</button>
+            </div>
+        </main>
+
+        <!-- 加载遮罩 -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>正在执行操作...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/renderer.js"></script>
+</body>
 </html>
