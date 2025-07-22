@@ -1,0 +1,39 @@
+{
+  "name": "network-manager-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Mac网络管理工具",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build-mac": "electron-builder --mac",
+    "dist": "npm run build"
+  },
+  "keywords": ["network", "mac", "ethernet"],
+  "author": "luojing1336 <luojing1336@hotmial.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^latest",
+    "electron-builder": "^latest"
+  },
+  "build": {
+    "appId": "com.luojing1336.network-manager",
+    "productName": "Mac网络管理工具",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "dmg"
+    },
+    "files": [
+      "main.js",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "network-manager.sh"
+    ]
+  }
+}
