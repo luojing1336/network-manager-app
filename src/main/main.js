@@ -22,7 +22,7 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    icon: path.join(__dirname, '../../public/app-icon-64x64.png'),
+    icon: path.join(__dirname, '../../public/app-icon-128x128.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -88,7 +88,7 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   if (process.platform === 'darwin') {
-    app.dock.setIcon(path.join(__dirname, '../../public/app-icon-512x512.png'));
+    app.dock.setIcon(path.join(__dirname, '../../public/app-icon-128x128.png'));
   }
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
