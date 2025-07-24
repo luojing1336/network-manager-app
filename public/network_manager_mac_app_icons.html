@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #36B3FF 0%, #3E85F7 100%);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
@@ -60,7 +60,7 @@
         }
         
         .download-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #36B3FF 0%, #3E85F7 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -125,7 +125,7 @@
             <!-- 应用图标 -->
             <div class="icon-section">
                 <h2>🌐 应用图标 (App Icon)</h2>
-                <p>地球/全球网络主题，紫色渐变背景</p>
+                <p>地球/全球网络主题，蓝色渐变背景</p>
                 
                 <div class="preview-sizes">
                     <div class="preview-item">
@@ -153,6 +153,7 @@
                 <button class="download-btn" onclick="downloadAppIcon(256)">下载 256x256</button>
                 <button class="download-btn" onclick="downloadAppIcon(512)">下载 512x512</button>
                 <button class="download-btn" onclick="downloadAppIcon(1024)">下载 1024x1024</button>
+                <button class="download-btn" onclick="downloadAppIconSVG(1024)">下载SVG 1024x1024</button>
             </div>
             
             <!-- 托盘图标 -->
@@ -183,6 +184,11 @@
                 <button class="download-btn" onclick="downloadTrayIcon(32, false)">下载 浅色 32x32</button>
                 <button class="download-btn" onclick="downloadTrayIcon(16, true)">下载 深色 16x16</button>
                 <button class="download-btn" onclick="downloadTrayIcon(32, true)">下载 深色 32x32</button>
+                <br/>
+                <button class="download-btn" onclick="downloadTrayIconSVG(16, false)">下载SVG 浅色 16x16</button>
+                <button class="download-btn" onclick="downloadTrayIconSVG(32, false)">下载SVG 浅色 32x32</button>
+                <button class="download-btn" onclick="downloadTrayIconSVG(16, true)">下载SVG 深色 16x16</button>
+                <button class="download-btn" onclick="downloadTrayIconSVG(32, true)">下载SVG 深色 32x32</button>
             </div>
         </div>
         
@@ -215,33 +221,27 @@
             
             return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="bgGradient-${size}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#8B7FD6;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#6B65C7;stop-opacity:1" />
+                    <linearGradient id="bgGradient-1024" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#36B3FF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#3E85F7;stop-opacity:1" />
                     </linearGradient>
                 </defs>
                 
                 <!-- 圆角矩形背景 -->
-                <rect width="${size}" height="${size}" rx="${cornerRadius}" ry="${cornerRadius}" 
-                      fill="url(#bgGradient-${size})"/>
+                <rect width="${size}" height="${size}" rx="${cornerRadius}" ry="${cornerRadius}" fill="url(#bgGradient-${size})"/>
                 
                 <!-- 地球轮廓 -->
-                <circle cx="${centerX}" cy="${centerY}" r="${globeRadius}" fill="none" 
-                        stroke="#A5D8E0" stroke-width="${strokeWidth}" opacity="0.85"/>
+                <circle cx="${centerX}" cy="${centerY}" r="${globeRadius}" fill="none" stroke="#FFFFFF" stroke-width="${strokeWidth}" opacity="0.85"/>
                 
                 <!-- 简化的经线 -->
-                <ellipse cx="${centerX}" cy="${centerY}" rx="${globeRadius * 0.5}" ry="${globeRadius}" 
-                         fill="none" stroke="#A5D8E0" stroke-width="${strokeWidth * 0.8}" opacity="0.75"/>
+                <ellipse cx="${centerX}" cy="${centerY}" rx="${globeRadius * 0.5}" ry="${globeRadius}" fill="none" stroke="#FFFFFF" stroke-width="${strokeWidth * 0.8}" opacity="0.75"/>
                 
                 <!-- 简化的纬线 -->
-                <line x1="${centerX - globeRadius}" y1="${centerY}" x2="${centerX + globeRadius}" y2="${centerY}" 
-                      stroke="#A5D8E0" stroke-width="${strokeWidth * 0.8}" opacity="0.75"/>
-                <ellipse cx="${centerX}" cy="${centerY}" rx="${globeRadius}" ry="${globeRadius * 0.4}" 
-                         fill="none" stroke="#A5D8E0" stroke-width="${strokeWidth * 0.7}" opacity="0.65"/>
+                <line x1="${centerX - globeRadius}" y1="${centerY}" x2="${centerX + globeRadius}" y2="${centerY}" stroke="#FFFFFF" stroke-width="${strokeWidth * 0.8}" opacity="0.75"/>
+                <ellipse cx="${centerX}" cy="${centerY}" rx="${globeRadius}" ry="${globeRadius * 0.4}" fill="none" stroke="#FFFFFF" stroke-width="${strokeWidth * 0.7}" opacity="0.65"/>
                 
                 <!-- 中心垂直线 -->
-                <line x1="${centerX}" y1="${centerY - globeRadius}" x2="${centerX}" y2="${centerY + globeRadius}" 
-                      stroke="#A5D8E0" stroke-width="${strokeWidth * 0.9}" opacity="0.8"/>
+                <line x1="${centerX}" y1="${centerY - globeRadius}" x2="${centerX}" y2="${centerY + globeRadius}" stroke="#FFFFFF" stroke-width="${strokeWidth * 0.9}" opacity="0.8"/>
             </svg>`;
         }
         
@@ -304,6 +304,17 @@
             img.src = url;
         }
         
+        // 下载SVG源文件
+        function downloadSVGSource(svgContent, filename) {
+            const blob = new Blob([svgContent], {type: 'image/svg+xml'});
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = URL.createObjectURL(blob);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
         // 下载应用图标
         function downloadAppIcon(size) {
             const svgContent = generateAppIcon(size);
@@ -315,6 +326,18 @@
             const svgContent = generateTrayIcon(size, isDark);
             const mode = isDark ? 'dark' : 'light';
             downloadSVG(svgContent, `tray-icon-${mode}-${size}x${size}.png`, size);
+        }
+        
+        // 下载应用图标SVG
+        function downloadAppIconSVG(size) {
+            const svgContent = generateAppIcon(size);
+            downloadSVGSource(svgContent, `app-icon-${size}x${size}.svg`);
+        }
+        // 下载托盘图标SVG
+        function downloadTrayIconSVG(size, isDark) {
+            const svgContent = generateTrayIcon(size, isDark);
+            const mode = isDark ? 'dark' : 'light';
+            downloadSVGSource(svgContent, `tray-icon-${mode}-${size}x${size}.svg`);
         }
         
         // 初始化预览
