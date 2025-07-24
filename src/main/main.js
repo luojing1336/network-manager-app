@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeTheme } from 'electron';
 import path from 'node:path';
 import { exec } from 'node:child_process';
 import started from 'electron-squirrel-startup';
@@ -8,11 +8,21 @@ if (started) {
   app.quit();
 }
 
+let tray = null;
+let mainWindow = null;
+
+function getTrayIcon() {
+  const isDark = nativeTheme.shouldUseDarkColors;
+  const iconName = isDark ? 'tray-icon-light-32x32.png' : 'tray-icon-dark-32x32.png';
+  return path.join(__dirname, '../../public', iconName);
+}
+
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    icon: path.join(__dirname, '../../public/app-icon-64x64.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -27,14 +37,59 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  mainWindow.on('close', (event) => {
+    // 最小化到托盘而不是退出
+    if (!app.isQuiting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+    return false;
+  });
 };
+
+function createTray() {
+  if (tray) return;
+  tray = new Tray(getTrayIcon());
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示主窗口',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+        }
+      }
+    },
+    {
+      label: '退出',
+      click: () => {
+        app.isQuiting = true;
+        app.quit();
+      }
+    }
+  ]);
+  tray.setToolTip('Network Manager');
+  tray.setContextMenu(contextMenu);
+  tray.on('double-click', () => {
+    if (mainWindow) {
+      mainWindow.show();
+    }
+  });
+  // 监听系统主题变化，自动切换托盘图标
+  nativeTheme.on('updated', () => {
+    tray.setImage(getTrayIcon());
+  });
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
-
+  createTray();
+  if (process.platform === 'darwin') {
+    app.dock.setIcon(path.join(__dirname, '../../public/app-icon-512x512.png'));
+  }
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   app.on('activate', () => {
