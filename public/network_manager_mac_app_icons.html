@@ -115,9 +115,32 @@
             font-size: 12px;
             color: #666;
         }
+
+        .preview-item svg {
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .status-message.error {
+            background: #f56565;
+        }
     </style>
 </head>
 <body>
+    <div class="status-message" id="statusMessage"></div>
+    
     <div class="container">
         <h1>🌐 Mac应用图标生成器</h1>
         
@@ -129,19 +152,19 @@
                 
                 <div class="preview-sizes">
                     <div class="preview-item">
-                        <svg id="app-icon-16" width="16" height="16"></svg>
+                        <svg id="app-icon-16" width="16" height="16" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>16x16</span>
                     </div>
                     <div class="preview-item">
-                        <svg id="app-icon-32" width="32" height="32"></svg>
+                        <svg id="app-icon-32" width="32" height="32" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>32x32</span>
                     </div>
                     <div class="preview-item">
-                        <svg id="app-icon-64" width="64" height="64"></svg>
+                        <svg id="app-icon-64" width="64" height="64" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>64x64</span>
                     </div>
                     <div class="preview-item">
-                        <svg id="app-icon-128" width="128" height="128"></svg>
+                        <svg id="app-icon-128" width="128" height="128" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>128x128</span>
                     </div>
                 </div>
@@ -163,19 +186,19 @@
                 
                 <div class="preview-sizes">
                     <div class="preview-item">
-                        <svg id="tray-icon-16" width="16" height="16"></svg>
+                        <svg id="tray-icon-16" width="16" height="16" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>16x16</span>
                     </div>
                     <div class="preview-item">
-                        <svg id="tray-icon-32" width="32" height="32"></svg>
+                        <svg id="tray-icon-32" width="32" height="32" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>32x32</span>
                     </div>
                     <div class="preview-item">
-                        <svg id="tray-dark-16" width="16" height="16" style="background: #333; border-radius: 3px;"></svg>
+                        <svg id="tray-dark-16" width="16" height="16" style="background: #333; border-radius: 3px;" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>深色模式</span>
                     </div>
                     <div class="preview-item">
-                        <svg id="tray-dark-32" width="32" height="32" style="background: #333; border-radius: 3px;"></svg>
+                        <svg id="tray-dark-32" width="32" height="32" style="background: #333; border-radius: 3px;" xmlns="http://www.w3.org/2000/svg"></svg>
                         <span>深色模式</span>
                     </div>
                 </div>
@@ -210,6 +233,18 @@
     </div>
 
     <script>
+        // 显示状态消息
+        function showMessage(message, isError = false) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'status-message error' : 'status-message';
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
         // 生成应用图标SVG
         function generateAppIcon(size) {
             const cornerRadius = size * 0.175;
@@ -221,7 +256,7 @@
             
             return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="bgGradient-1024" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="bgGradient-${size}" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" style="stop-color:#36B3FF;stop-opacity:1" />
                         <stop offset="100%" style="stop-color:#3E85F7;stop-opacity:1" />
                     </linearGradient>
@@ -275,46 +310,81 @@
             </svg>`;
         }
         
-        // 下载SVG为PNG
+        // 下载SVG为PNG - 改进的错误处理
         function downloadSVG(svgContent, filename, size) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            
-            canvas.width = size;
-            canvas.height = size;
-            
-            const svgBlob = new Blob([svgContent], {type: 'image/svg+xml'});
-            const url = URL.createObjectURL(svgBlob);
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, size, size);
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
                 
-                canvas.toBlob(function(blob) {
-                    const link = document.createElement('a');
-                    link.download = filename;
-                    link.href = URL.createObjectURL(blob);
-                    link.click();
-                    
+                canvas.width = size;
+                canvas.height = size;
+                
+                const svgBlob = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
+                const url = URL.createObjectURL(svgBlob);
+                
+                img.onload = function() {
+                    try {
+                        ctx.drawImage(img, 0, 0, size, size);
+                        
+                        canvas.toBlob(function(blob) {
+                            if (blob) {
+                                const link = document.createElement('a');
+                                link.download = filename;
+                                link.href = URL.createObjectURL(blob);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                
+                                showMessage(`已下载: ${filename}`);
+                                
+                                // 清理URL
+                                setTimeout(() => {
+                                    URL.revokeObjectURL(url);
+                                    URL.revokeObjectURL(link.href);
+                                }, 100);
+                            } else {
+                                showMessage('生成图片失败', true);
+                            }
+                        }, 'image/png');
+                    } catch (error) {
+                        showMessage('绘制图片失败: ' + error.message, true);
+                        URL.revokeObjectURL(url);
+                    }
+                };
+                
+                img.onerror = function() {
+                    showMessage('加载SVG失败', true);
                     URL.revokeObjectURL(url);
-                    URL.revokeObjectURL(link.href);
-                });
-            };
-            
-            img.src = url;
+                };
+                
+                img.src = url;
+            } catch (error) {
+                showMessage('创建图片失败: ' + error.message, true);
+            }
         }
         
-        // 下载SVG源文件
+        // 下载SVG源文件 - 改进的错误处理
         function downloadSVGSource(svgContent, filename) {
-            const blob = new Blob([svgContent], {type: 'image/svg+xml'});
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = URL.createObjectURL(blob);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            try {
+                const blob = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = URL.createObjectURL(blob);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showMessage(`已下载: ${filename}`);
+                
+                setTimeout(() => {
+                    URL.revokeObjectURL(link.href);
+                }, 100);
+            } catch (error) {
+                showMessage('下载SVG失败: ' + error.message, true);
+            }
         }
+        
         // 下载应用图标
         function downloadAppIcon(size) {
             const svgContent = generateAppIcon(size);
@@ -333,6 +403,7 @@
             const svgContent = generateAppIcon(size);
             downloadSVGSource(svgContent, `app-icon-${size}x${size}.svg`);
         }
+        
         // 下载托盘图标SVG
         function downloadTrayIconSVG(size, isDark) {
             const svgContent = generateTrayIcon(size, isDark);
@@ -340,36 +411,70 @@
             downloadSVGSource(svgContent, `tray-icon-${mode}-${size}x${size}.svg`);
         }
         
-        // 初始化预览
+        // 初始化预览 - 修复预览显示问题
         function initPreviews() {
-            // 应用图标预览
-            [16, 32, 64, 128].forEach(size => {
-                const element = document.getElementById(`app-icon-${size}`);
-                if (element) {
-                    const svgContent = generateAppIcon(size);
-                    element.innerHTML = svgContent.replace(`<svg width="${size}" height="${size}"`, '<g').replace('</svg>', '</g>');
-                }
-            });
-            
-            // 托盘图标预览
-            [16, 32].forEach(size => {
-                const lightElement = document.getElementById(`tray-icon-${size}`);
-                const darkElement = document.getElementById(`tray-dark-${size}`);
+            try {
+                // 应用图标预览
+                [16, 32, 64, 128].forEach(size => {
+                    const element = document.getElementById(`app-icon-${size}`);
+                    if (element) {
+                        const svgContent = generateAppIcon(size);
+                        // 提取SVG内容并设置到现有元素中
+                        const parser = new DOMParser();
+                        const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+                        const newSvg = svgDoc.documentElement;
+                        
+                        // 复制所有属性和内容
+                        element.innerHTML = newSvg.innerHTML;
+                        // 复制viewBox属性
+                        element.setAttribute('viewBox', newSvg.getAttribute('viewBox'));
+                    }
+                });
                 
-                if (lightElement) {
-                    const lightContent = generateTrayIcon(size, false);
-                    lightElement.innerHTML = lightContent.replace(`<svg width="${size}" height="${size}"`, '<g').replace('</svg>', '</g>');
-                }
+                // 托盘图标预览
+                [16, 32].forEach(size => {
+                    // 处理浅色托盘图标
+                    const lightElement = document.getElementById(`tray-icon-${size}`);
+                    if (lightElement) {
+                        const lightContent = generateTrayIcon(size, false);
+                        const parser = new DOMParser();
+                        const svgDoc = parser.parseFromString(lightContent, 'image/svg+xml');
+                        const newSvg = svgDoc.documentElement;
+                        
+                        lightElement.innerHTML = newSvg.innerHTML;
+                        lightElement.setAttribute('viewBox', newSvg.getAttribute('viewBox'));
+                    }
+                    
+                    // 处理深色托盘图标
+                    const darkElement = document.getElementById(`tray-dark-${size}`);
+                    if (darkElement) {
+                        const darkContent = generateTrayIcon(size, true);
+                        const parser = new DOMParser();
+                        const svgDoc = parser.parseFromString(darkContent, 'image/svg+xml');
+                        const newSvg = svgDoc.documentElement;
+                        
+                        darkElement.innerHTML = newSvg.innerHTML;
+                        darkElement.setAttribute('viewBox', newSvg.getAttribute('viewBox'));
+                    }
+                });
                 
-                if (darkElement) {
-                    const darkContent = generateTrayIcon(size, true);
-                    darkElement.innerHTML = darkContent.replace(`<svg width="${size}" height="${size}"`, '<g').replace('</svg>', '</g>');
-                }
-            });
+                console.log('所有预览图标已初始化');
+            } catch (error) {
+                console.error('初始化预览失败:', error);
+                showMessage('预览初始化失败', true);
+            }
         }
         
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initPreviews);
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initPreviews();
+                showMessage('图标生成器加载完成');
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                showMessage('页面初始化失败', true);
+            }
+        });
     </script>
 </body>
 </html>
