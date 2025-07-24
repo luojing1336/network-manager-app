@@ -47,17 +47,22 @@ npm start
 
 ```
 .
-├── src/                  # 主程序源码
-│   ├── main.js           # Electron 主进程
-│   ├── renderer.js       # 渲染进程（前端逻辑）
-│   ├── preload.js        # 预加载脚本
-│   └── styles.css        # 样式文件
+├── src/                      # 主程序源码
+│   ├── main/                 # Electron 主进程相关
+│   │   └── main.js           # 主进程入口
+│   ├── renderer/             # 渲染进程（前端逻辑与资源）
+│   │   ├── renderer.js       # 渲染进程入口
+│   │   ├── styles.css        # 样式文件
+│   ├── preload/              # 预加载脚本
+│   │   └── preload.js        # 预加载入口
+│   ├── assets/               # 静态资源（如图片）
+│   │   └── lj-logo.png       # 应用 logo
 ├── scripts/
-│   └── network-manager.sh # Bash 脚本，命令行网络管理
-├── index.html            # 应用主页面
-├── package.json          # 项目信息与依赖
-├── forge.config.js       # Electron Forge 配置
-└── ...                   # 其他配置文件
+│   └── network-manager.sh    # Bash 脚本，命令行网络管理
+├── index.html                # 应用主页面
+├── package.json              # 项目信息与依赖
+├── forge.config.js           # Electron Forge 配置
+└── ...                       # 其他配置文件
 ```
 
 ## 使用说明
