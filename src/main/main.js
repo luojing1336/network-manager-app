@@ -43,11 +43,8 @@ const createWindow = () => {
 
   mainWindow.on('close', (event) => {
     // 最小化到托盘而不是退出
-    if (!app.isQuiting) {
-      event.preventDefault();
-      mainWindow.hide();
-    }
-    return false;
+    event.preventDefault();
+    mainWindow.hide();
   });
 };
 
@@ -115,7 +112,7 @@ async function updateTrayMenu() {
     },
     { type: 'separator' },
     { label: '显示主窗口', click: () => { if (mainWindow) mainWindow.show(); } },
-    { label: '退出', click: () => { app.isQuiting = true; app.quit(); } }
+    { label: '退出', click: () => { app.quit(); } }
   ]);
   tray.setContextMenu(contextMenu);
 }
