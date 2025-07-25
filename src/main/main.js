@@ -13,6 +13,7 @@ let mainWindow = null;
 let trayNetworkStatus = '未知';
 let trayServices = [];
 let trayCurrentService = '';
+let isQuitting = false; // app 退出标记
 
 function getTrayIcon() {
   const isDark = nativeTheme.shouldUseDarkColors;
@@ -42,9 +43,11 @@ const createWindow = () => {
   mainWindow.webContents.openDevTools();
 
   mainWindow.on('close', (event) => {
-    // 最小化到托盘而不是退出
-    event.preventDefault();
-    mainWindow.hide();
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+    // 否则允许退出
   });
 };
 
@@ -112,7 +115,7 @@ async function updateTrayMenu() {
     },
     { type: 'separator' },
     { label: '显示主窗口', click: () => { if (mainWindow) mainWindow.show(); } },
-    { label: '退出', click: () => { app.quit(); } }
+    { label: '退出', click: () => { isQuitting = true; app.quit(); } }
   ]);
   tray.setContextMenu(contextMenu);
 }
